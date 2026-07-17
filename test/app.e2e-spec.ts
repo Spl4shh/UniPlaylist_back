@@ -16,15 +16,30 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/playlists (GET)', () => {
+  it('/playlists (GET) - unauthorized', () => {
     return request(app.getHttpServer())
       .get('/playlists')
-      .expect(200)
-      .expect([
-        { id: 1, code: 'PL1' },
-        { id: 2, code: 'PL2' },
-        { id: 3, code: 'PL3' },
-      ]);
+      .expect(401);
+  });
+
+  it('/playlists (GET) - authorized after user registration', async () => {
+    const login = 'testuser_' + Date.now();
+    const password = 'testpassword';
+
+    // 1. Register a test user
+    await request(app.getHttpServer())
+      .post('/users')
+      .send({ login, password })
+      .expect(201);
+
+    // 2. Fetch playlists using Basic auth credentials
+    const credentials = Buffer.from(`${login}:${password}`).toString('base64');
+    const response = await request(app.getHttpServer())
+      .get('/playlists')
+      .set('Authorization', `Basic ${credentials}`)
+      .expect(200);
+
+    expect(response.body).toBeInstanceOf(Array);
   });
 
   afterEach(async () => {
