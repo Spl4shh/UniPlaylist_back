@@ -1,12 +1,15 @@
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "./user.model";
 
 @Entity('playlist')
 export class Playlist {
 
-      @PrimaryColumn()
+      @PrimaryGeneratedColumn()
+      id?: string;
+
+      @Column({ unique: true })
       code!: string;
 
-      constructor(code: string) {
-            this.code = code;
-      }
+      @ManyToOne(() => User, { nullable: false, eager: true })
+      creator!: User;
 }     
