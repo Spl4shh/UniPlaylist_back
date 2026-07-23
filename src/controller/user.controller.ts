@@ -4,10 +4,13 @@ import { User } from '../model/user.model';
 import { Public } from '../decorator/public.decorator';
 import { UserDto } from '../dto/user.dto';
 import { LoginRequestDto } from '../dto/login-request.dto';
+import { AuthService } from '../service/auth.service';
 
 @Controller('/users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService,
+              private readonly authService: AuthService
+  ) {}
 
   @Public()
   @Post()
@@ -20,6 +23,6 @@ export class UserController {
   @Public()
   @Post('/login')
   async login(@Body() credentials: LoginRequestDto) {
-    return await this.userService.authenticateUser(credentials.login, credentials.password)
+    return await this.authService.authenticateUser(credentials.login, credentials.password)
   }
 }
