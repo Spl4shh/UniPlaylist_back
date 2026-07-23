@@ -9,6 +9,7 @@ import { UserController } from './controller/user.controller';
 import { UserService } from './service/user.service';
 import { APP_GUARD } from '@nestjs/core';
 import { BasicAuthGuard } from './auth/basic-auth.guard';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -18,11 +19,11 @@ import { BasicAuthGuard } from './auth/basic-auth.guard';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         type: 'mysql',
-        host: configService.get<string>('DB_HOST', 'localhost'),
-        port: configService.get<number>('DB_PORT', 3306),
-        username: configService.get<string>('DB_USERNAME', 'root'),
-        password: configService.get<string>('DB_PASSWORD', ''),
-        database: configService.get<string>('DB_NAME', 'uniplaylist'),
+        host: configService.getOrThrow<string>('DB_HOST'),
+        port: configService.getOrThrow<number>('DB_PORT'),
+        username: configService.getOrThrow<string>('DB_USERNAME'),
+        password: configService.getOrThrow<string>('DB_PASSWORD'),
+        database: configService.getOrThrow<string>('DB_NAME'),
         entities: [
           Playlist,
           User
@@ -45,7 +46,7 @@ import { BasicAuthGuard } from './auth/basic-auth.guard';
     UserService,
     {
       provide: APP_GUARD,
-      useClass: BasicAuthGuard,
+      useClass: JwtAuthGuard,
     },
   ],
 })
