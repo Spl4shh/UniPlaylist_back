@@ -14,7 +14,7 @@ export class PlaylistController {
   constructor(private readonly playlistService: PlaylistService) {}
 
   @Get()
-  async getPlaylists(): Promise<Playlist[]> {
+  async getPlaylists(): Promise<PlaylistDto[]> {
     return (await this.playlistService.getPlaylists()).map((playlist) => new PlaylistDto(playlist));
   }
 
@@ -22,7 +22,7 @@ export class PlaylistController {
   async createPlaylist(
     @Body() playlist: Partial<Playlist>,
     @Req() request: RequestWithUser,
-  ): Promise<Playlist> {
+  ): Promise<PlaylistDto> {
     const playlistCreated = await this.playlistService.createPlaylist(playlist, request.user);
 
     return new PlaylistDto(playlistCreated);

@@ -10,7 +10,10 @@ export class User {
   login!: string;
 
   @Column({ nullable: false})
-  password?: string;
+  password!: string;
+
+  @Column({ nullable: true })
+  refreshToken?: string;
 
   @OneToMany(() => Playlist, playlist => playlist.creator,
             { cascade: true, eager: false})

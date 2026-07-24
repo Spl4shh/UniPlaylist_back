@@ -3,18 +3,43 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../model/user.model';
 import * as crypto from 'crypto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
-  private readonly ALGO_CRYPTO = 'sha512'
-  
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+    private readonly configService: ConfigService
+  ) { }
+
+  async findOneById(userId: number) {
+    return await this.userRepository.findOne({ where: { id: userId } });
+  }
 
   async findOneByLogin(login: string): Promise<User | null> {
     return await this.userRepository.findOne({ where: { login } });
+  }
+
+  async findOneByRefreshToken(refreshToken: string): Promise<User | null> {
+    return await this.userRepository.findOne({ where: { refreshToken } });
+  }
+
+  async updateRefreshToken(id: number, refreshToken: string) {
+    const user = await this.userRepository.findOne({ where: { id } });
+
+    if (user) {
+      user.refreshToken = refreshToken
+      this.userRepository.save(user);
+    } else {
+      throw new Error('User not found')
+    }
+  }
+
+  hashPassword(password: string): string {
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, this.configService.getOrThrow<string>('ALGO_CRYPTO')).toString('hex');
+    return `${salt}:${hash}`;
   }
 
   async createUser(userDto: Partial<User>): Promise<User> {
@@ -31,21 +56,5 @@ export class UserService {
     newUser.password = this.hashPassword(userDto.password);
 
     return await this.userRepository.save(newUser);
-  }
-
-  hashPassword(password: string): string {
-    const salt = crypto.randomBytes(16).toString('hex');
-    const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, this.ALGO_CRYPTO).toString('hex');
-    return `${salt}:${hash}`;
-  }
-
-  verifyPassword(password: string, stored: string): boolean {
-    const parts = stored.split(':');
-    if (parts.length !== 2) return false;
-
-    const [salt, hash] = parts;
-    const verifyHash = crypto.pbkdf2Sync(password, salt, 1000, 64, this.ALGO_CRYPTO).toString('hex');
-
-    return hash === verifyHash;
   }
 }
