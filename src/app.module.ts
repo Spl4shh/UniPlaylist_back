@@ -10,6 +10,7 @@ import { UserService } from './service/user.service';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { AuthService } from './service/auth.service';
+import { AuthController } from './controller/auth.controller';
 
 @Module({
   imports: [
@@ -39,14 +40,15 @@ import { AuthService } from './service/auth.service';
       ]),
     ], 
   controllers: [
+    AuthController,
     PlaylistController, 
     UserController
   ],
   providers: [
     AuthService,
     ConfigService,
-    UserService,
     PlaylistService,
+    UserService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

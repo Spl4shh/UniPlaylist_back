@@ -12,6 +12,9 @@ export class User {
   @Column({ nullable: false})
   password!: string;
 
+  @Column({ nullable: true })
+  refreshToken?: string;
+
   @OneToMany(() => Playlist, playlist => playlist.creator,
             { cascade: true, eager: false})
   playlists?: Playlist[];
